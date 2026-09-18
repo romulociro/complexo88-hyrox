@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin — Complexo 88 Hyrox</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body class="admin-page">
+    <div class="page">
+      <header class="topbar">
+        <div class="brand-block">
+          <p class="brand">COMPLEXO<span>88</span></p>
+          <p class="tagline">CROSSFIT • HYROX • FAMÍLIA</p>
+        </div>
+        <div class="center-meta">
+          <p class="kicker">PAINEL DO BOX</p>
+          <p class="meta-line">ADMIN • RANKING • MURAL</p>
+        </div>
+        <div class="side-meta nav-admin">
+          <a class="btn ghost" href="/">VER RANKING</a>
+          <button class="btn ghost" id="logout-btn" type="button" hidden>SAIR</button>
+        </div>
+      </header>
+
+      <div id="login-view" class="login-wrap" hidden>
+        <form id="login-form" class="login-card">
+          <h1 class="section-title">ENTRAR NO PAINEL</h1>
+          <p class="section-sub" style="margin: 8px 0 16px">COMPLEXO 88 — SÓ QUEM MANDA NO BOX</p>
+          <label class="sr-only" for="user">Usuário</label>
+          <input id="user" name="user" type="text" autocomplete="username" placeholder="USUÁRIO" />
+          <div style="height: 8px"></div>
+          <label class="sr-only" for="pass">Senha</label>
+          <input id="pass" name="pass" type="password" autocomplete="current-password" placeholder="SENHA" />
+          <p class="error" id="login-error" hidden></p>
+          <div class="actions" style="margin-top: 12px">
+            <button class="btn" type="submit">ENTRAR</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="dash-view" hidden>
+        <section class="hero">
+          <h1 class="page-title">GESTÃO DO RANKING E DO MURAL</h1>
+          <p class="important-note">Arrasta pra reordenar. A fila anda na hora — o ranking público atualiza ao vivo.</p>
+        </section>
+
+        <div class="admin-grid">
+          <section class="admin-box">
+            <div class="section-head">
+              <h2 class="section-title">RANKING HYROX — C88</h2>
+              <button class="btn" id="add-btn" type="button">+ ATLETA</button>
+            </div>
+            <p class="section-sub" id="rank-hint">Segura e arrasta (mouse ou toque). O amarelo marca quem está em movimento.</p>
+            <ul id="admin-ranking" class="admin-list"></ul>
+          </section>
+
+          <section class="admin-box">
+            <div class="section-head">
+              <h2 class="section-title">MURAL</h2>
+              <p class="section-sub">MODERAÇÃO</p>
+            </div>
+            <form id="complexo-form">
+              <label class="sr-only" for="complexo-text">Recado do Complexo</label>
+              <textarea id="complexo-text" maxlength="400" placeholder="Escreve como COMPLEXO 88..."></textarea>
+              <div class="actions" style="margin-top: 8px">
+                <button class="btn" type="submit">POSTAR COMO COMPLEXO</button>
+              </div>
+            </form>
+            <ul id="admin-chat" class="chat-list" style="max-height: 360px; margin-top: 12px"></ul>
+            <h3 class="section-title" style="font-size: 24px; margin-top: 16px">BANCO / MUTADOS</h3>
+            <ul id="mute-list" class="mute-list"></ul>
+          </section>
+        </div>
+
+        <div class="play-grid admin-play">
+          <section class="play-card">
+            <h2 class="section-title">PÓDIO DA SEMANA</h2>
+            <p class="section-sub">VOTO DA GALERA — NÃO MEXE NO RANKING OFICIAL</p>
+            <p class="tiny" id="week-status"></p>
+            <div class="actions wrap">
+              <button class="btn" type="button" id="week-open">ABRIR VOTAÇÃO</button>
+              <button class="btn ghost" type="button" id="week-close">FECHAR</button>
+              <button class="btn ghost" type="button" id="week-reset">RESETAR SEMANA</button>
+            </div>
+          </section>
+          <section class="play-card">
+            <h2 class="section-title">PALPITE</h2>
+            <p class="tiny" id="palpite-status"></p>
+            <div class="actions wrap">
+              <button class="btn" type="button" id="palpite-open">NOVA RODADA</button>
+              <button class="btn ghost" type="button" id="palpite-reveal">REVELAR</button>
+            </div>
+          </section>
+          <section class="play-card">
+            <h2 class="section-title">DESAFIO DA SEMANA</h2>
+            <form id="challenge-form" class="stack">
+              <input id="challenge-title" type="text" maxlength="80" placeholder="TÍTULO DO WOD" />
+              <textarea id="challenge-wod" maxlength="400" placeholder="O QUE TEM QUE FAZER"></textarea>
+              <div class="actions wrap">
+                <button class="btn" type="submit">PUBLICAR</button>
+                <button class="btn ghost" type="button" id="challenge-close">ENCERRAR</button>
+              </div>
+            </form>
+            <p class="tiny" id="challenge-status"></p>
+          </section>
+          <section class="play-card">
+            <h2 class="section-title">ENQUETE RÁPIDA</h2>
+            <form id="poll-form" class="stack">
+              <input id="poll-question" type="text" maxlength="120" placeholder="PERGUNTA" />
+              <input id="poll-opt1" type="text" maxlength="40" placeholder="OPÇÃO 1" />
+              <input id="poll-opt2" type="text" maxlength="40" placeholder="OPÇÃO 2" />
+              <input id="poll-opt3" type="text" maxlength="40" placeholder="OPÇÃO 3 (OPCIONAL)" />
+              <div class="actions wrap">
+                <button class="btn" type="submit">ABRIR ENQUETE</button>
+                <button class="btn ghost" type="button" id="poll-close">ENCERRAR</button>
+              </div>
+            </form>
+            <p class="tiny" id="poll-status"></p>
+          </section>
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        <span>DISCIPLINA • EVOLUÇÃO • JUNTOS</span>
+        <span>COMPLEXO 88</span>
+      </footer>
+    </div>
+
+    <div class="modal" id="athlete-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <form class="modal-card" id="athlete-form">
+        <h2 class="section-title" id="modal-title">NOVO ATLETA</h2>
+        <input type="hidden" id="athlete-id" />
+        <div style="height: 10px"></div>
+        <label class="sr-only" for="athlete-name">Nome</label>
+        <input id="athlete-name" type="text" maxlength="40" placeholder="NOME" required />
+        <div style="height: 8px"></div>
+        <label class="sr-only" for="athlete-nick">Apelido</label>
+        <input id="athlete-nick" type="text" maxlength="40" placeholder="APELIDO" />
+        <div style="height: 12px"></div>
+        <p class="section-sub">ÍCONE — TOCA UM EMOJI OU COLA QUALQUER UM</p>
+        <div class="form-row" style="margin-top: 8px">
+          <div class="icon-preview" id="icon-preview">⚡</div>
+          <input id="athlete-icon" type="text" maxlength="16" placeholder="COLA O EMOJI AQUI" />
+        </div>
+        <div id="emoji-picker"></div>
+        <p class="error" id="athlete-error" hidden></p>
+        <div class="actions" style="margin-top: 12px">
+          <button class="btn" type="submit">SALVAR</button>
+          <button class="btn ghost" type="button" id="cancel-modal">CANCELAR</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="/js/shared.js"></script>
+    <script src="/js/emoji.js"></script>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

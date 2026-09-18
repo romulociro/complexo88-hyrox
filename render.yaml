@@ -1,0 +1,30 @@
+# Blueprint da Render — plano FREE, um único web service (WebSocket ok).
+# Dashboard: New Blueprint Instance → este repo, ou New Web Service e use os comandos abaixo.
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: complexo88-hyrox
+    runtime: node
+    plan: free
+    nodeVersion: "22.14.0"
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false

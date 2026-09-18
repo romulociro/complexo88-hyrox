@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ranking Hyrox — Complexo 88</title>
+    <meta name="description" content="Ranking oficial dos atletas Hyrox do Complexo 88, pódio da semana e mural da galera." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand-block">
+          <p class="brand">COMPLEXO<span>88</span></p>
+          <p class="tagline">CROSSFIT • HYROX • FAMÍLIA</p>
+        </div>
+        <div class="center-meta">
+          <p class="kicker" id="weekday">RANKING AO VIVO</p>
+          <p class="meta-line" id="today"></p>
+        </div>
+        <div class="side-meta">
+          <div class="hyrox-mark"><span class="live-dot" aria-hidden="true"></span> HYROX</div>
+          <p class="meta-line"><a href="/admin">PAINEL</a></p>
+        </div>
+      </header>
+
+      <section class="hero">
+        <h1 class="page-title">RANKING OFICIAL DOS ATLETAS HYROX — COMPLEXO 88</h1>
+        <p class="important-note">
+          IMPORTANTE: esse ranking retrata o momento; quem tá embaixo treine; quem tá em cima se garanta; a fila anda
+        </p>
+        <p class="split-note">Ranking oficial: só o Complexo mexe. Pódio da Semana: voto da galera. São coisas diferentes.</p>
+      </section>
+
+      <div class="layout">
+        <section aria-labelledby="ranking-title">
+          <div class="section-head">
+            <h2 class="section-title" id="ranking-title">RANKING HYROX — C88</h2>
+            <p class="section-sub" id="ranking-updated">OFICIAL • AO VIVO</p>
+          </div>
+          <div id="podium" class="podium"></div>
+          <ol id="ranking" class="rank-list"></ol>
+          <p class="loading" id="ranking-status">Carregando o ranking...</p>
+          <p class="footnote">Ranking sujeito a alterações sem aviso prévio. Bora treinar...</p>
+        </section>
+
+        <aside class="mural" id="mural" aria-labelledby="mural-title">
+          <div class="mural-head">
+            <div class="section-head">
+              <h2 class="section-title" id="mural-title">MURAL DA GALERA</h2>
+              <p class="section-sub">MORAL DO BOX</p>
+            </div>
+            <p class="section-sub">Provoca na esportiva. Respeita a família. O Complexo tá de olho.</p>
+          </div>
+          <div id="chat-status" class="loading">Abrindo o mural...</div>
+          <ul id="chat-list" class="chat-list" aria-live="polite"></ul>
+          <div class="mural-composer">
+            <div id="who" class="who"></div>
+            <div id="auth-box"></div>
+            <form id="chat-form" hidden>
+              <div class="composer-row">
+                <label class="sr-only" for="chat-text">Mensagem</label>
+                <textarea id="chat-text" maxlength="400" placeholder="Manda o recado. Sem drama, com moral."></textarea>
+              </div>
+              <div class="actions" style="margin-top: 8px">
+                <button class="btn" type="submit">POSTAR</button>
+                <button class="btn ghost" type="button" id="logout-btn">SAIR</button>
+              </div>
+            </form>
+          </div>
+        </aside>
+      </div>
+
+      <section id="athlete-dock" class="play-card dock" hidden>
+        <div class="section-head">
+          <h2 class="section-title">ÁREA DO ATLETA</h2>
+          <p class="section-sub">CHECK-IN • PROVOCA • RIVAL</p>
+        </div>
+        <div class="dock-grid">
+          <div>
+            <h3 class="mini-title">CHECK-IN</h3>
+            <p class="section-sub" id="streak-line">Marca o treino do dia.</p>
+            <button class="btn" type="button" id="checkin-btn">TREINEI HOJE</button>
+            <p class="tiny" id="checkins-today"></p>
+          </div>
+          <form id="provoca-form" class="stack">
+            <h3 class="mini-title">PROVOCA</h3>
+            <select id="provoca-target"></select>
+            <input id="provoca-text" type="text" maxlength="140" placeholder="Recado curto. Na esportiva." />
+            <button class="btn" type="submit">MANDAR</button>
+          </form>
+          <form id="rival-form" class="stack">
+            <h3 class="mini-title">RIVALIDADE</h3>
+            <select id="rival-target"></select>
+            <button class="btn" type="submit">ESCOLHER ALVO</button>
+            <p class="tiny" id="rival-line"></p>
+          </form>
+        </div>
+        <div id="inbox" class="inbox"></div>
+      </section>
+
+      <div class="play-grid">
+        <section class="play-card" id="week-podium-card">
+          <div class="section-head">
+            <h2 class="section-title">PÓDIO DA SEMANA</h2>
+            <p class="section-sub">VOTO DA GALERA</p>
+          </div>
+          <p class="section-sub">Isso NÃO é o ranking oficial. É o pódio da torcida da semana.</p>
+          <div id="week-podium"></div>
+        </section>
+
+        <section class="play-card" id="hall-card">
+          <div class="section-head">
+            <h2 class="section-title">HALL DA FAMA</h2>
+            <p class="section-sub">QUEM JÁ FOI #1</p>
+          </div>
+          <ul id="hall" class="rank-list"></ul>
+        </section>
+
+        <section class="play-card" id="challenge-card">
+          <div class="section-head">
+            <h2 class="section-title">DESAFIO DA SEMANA</h2>
+            <p class="section-sub">WOD DO BOX</p>
+          </div>
+          <div id="challenge"></div>
+        </section>
+
+        <section class="play-card" id="palpite-card">
+          <div class="section-head">
+            <h2 class="section-title">PALPITE DA ATUALIZAÇÃO</h2>
+            <p class="section-sub">QUEM SOBE / QUEM DESCE</p>
+          </div>
+          <div id="palpite"></div>
+        </section>
+
+        <section class="play-card" id="poll-card">
+          <div class="section-head">
+            <h2 class="section-title">ENQUETE RÁPIDA</h2>
+            <p class="section-sub">UM TOQUE</p>
+          </div>
+          <div id="poll"></div>
+        </section>
+
+        <section class="play-card" id="pokes-card">
+          <div class="section-head">
+            <h2 class="section-title">PROVOCAÇÕES</h2>
+            <p class="section-sub">NA ESPORTIVA</p>
+          </div>
+          <ul id="pokes" class="chat-list compact"></ul>
+        </section>
+      </div>
+
+      <footer class="site-footer">
+        <span>DISCIPLINA • EVOLUÇÃO • JUNTOS</span>
+        <span>COMPLEXO 88</span>
+      </footer>
+    </div>
+    <div id="confetti" class="confetti" hidden></div>
+    <div class="celebrate" id="celebrate" hidden></div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/js/shared.js"></script>
+    <script src="/js/public.js"></script>
+  </body>
+</html>
