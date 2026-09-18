@@ -12,13 +12,14 @@
   async function api(path, options = {}) {
     let res;
     try {
+      const { headers: extraHeaders, ...rest } = options;
       res = await fetch(path, {
+        ...rest,
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          ...(options.headers || {}),
+          ...(extraHeaders || {}),
         },
-        ...options,
       });
     } catch {
       const err = new Error("Servidor offline. Tenta de novo.");

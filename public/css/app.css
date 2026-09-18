@@ -21,6 +21,12 @@
   box-sizing: border-box;
 }
 
+/* hidden must win over display:grid/flex helpers */
+[hidden] {
+  display: none !important;
+}
+
+
 html,
 body {
   margin: 0;
@@ -33,6 +39,13 @@ body {
 
 body {
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html {
+  overflow-y: auto;
 }
 
 img {
@@ -577,7 +590,7 @@ textarea {
   border: 1px solid transparent;
   border-bottom: 1px solid rgba(255, 204, 0, 0.2);
   background: transparent;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .admin-row .handle {
@@ -585,6 +598,7 @@ textarea {
   font-size: 18px;
   cursor: grab;
   user-select: none;
+  touch-action: none;
 }
 
 .admin-row.is-dragging,

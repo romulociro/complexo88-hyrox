@@ -58,10 +58,14 @@
     modal.classList.remove("open");
   }
 
-  picker = window.C88Emoji.mount(document.getElementById("emoji-picker"), {
-    value: "⚡",
-    onChange: setIcon,
-  });
+  try {
+    picker = window.C88Emoji?.mount(document.getElementById("emoji-picker"), {
+      value: "⚡",
+      onChange: setIcon,
+    });
+  } catch (err) {
+    console.warn("emoji picker unavailable", err);
+  }
 
   iconInput.addEventListener("input", () => setIcon(iconInput.value));
   iconInput.addEventListener("paste", (event) => {
@@ -93,6 +97,10 @@
       .join("");
 
     if (sortable) sortable.destroy();
+    if (typeof Sortable === "undefined") {
+      console.warn("Sortable unavailable");
+      return;
+    }
     sortable = Sortable.create(listEl, {
       animation: 150,
       handle: ".handle",
@@ -202,15 +210,30 @@
 
   async function showDash() {
     loginView.hidden = true;
+    loginView.setAttribute("hidden", "");
     dashView.hidden = false;
+    dashView.removeAttribute("hidden");
     logoutBtn.hidden = false;
-    await refresh();
+    logoutBtn.removeAttribute("hidden");
+    document.body.classList.add("is-admin");
+    document.getElementById("user").value = "";
+    document.getElementById("pass").value = "";
+    try {
+      await refresh();
+    } catch (err) {
+      if (err.status === 401) throw err;
+      toast(err.message || "Painel parcialmente carregado.");
+    }
   }
 
   function showLogin() {
     loginView.hidden = false;
+    loginView.removeAttribute("hidden");
     dashView.hidden = true;
+    dashView.setAttribute("hidden", "");
     logoutBtn.hidden = true;
+    logoutBtn.setAttribute("hidden", "");
+    document.body.classList.remove("is-admin");
   }
 
   loginForm.addEventListener("submit", async (event) => {
