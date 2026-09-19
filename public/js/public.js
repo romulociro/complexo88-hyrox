@@ -641,9 +641,5 @@
     }
   });
 
-  const params = new URLSearchParams(location.search);
-  if (params.get("auth") === "denied") toast("Login Google cancelado.");
-  if (params.get("auth") === "error") toast("Falha no Google OAuth.");
-
   boot();
 })();
