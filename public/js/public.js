@@ -608,6 +608,15 @@
     }
   }
 
+  const authQ = new URLSearchParams(location.search).get("auth");
+  if (authQ === "denied") toast("Login Google cancelado.");
+  if (authQ === "error") toast("Não rolou o Google. Tenta de novo.");
+  if (authQ) {
+    const url = new URL(location.href);
+    url.searchParams.delete("auth");
+    history.replaceState({}, "", url.pathname + url.hash);
+  }
+
   connectLive((msg) => {
     if (msg.type === "hello" || msg.type === "state") {
       applyState(msg.payload || {}, msg.payload || {});

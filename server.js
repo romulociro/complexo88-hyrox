@@ -606,19 +606,21 @@ app.get("/auth/google/callback", async (req, res) => {
     return res.redirect("/?auth=denied");
   }
   try {
+    const tokenBody = new URLSearchParams({
+      code: String(code),
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      redirect_uri: callbackUrl(req),
+      grant_type: "authorization_code",
+    });
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: callbackUrl(req),
-        grant_type: "authorization_code",
-      }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: tokenBody.toString(),
     });
     const tokens = await tokenRes.json();
     if (!tokens.access_token) {
+      console.warn("Google token exchange failed:", tokens.error || tokens);
       return res.redirect("/?auth=error");
     }
     const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
