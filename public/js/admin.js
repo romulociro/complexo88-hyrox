@@ -1,5 +1,5 @@
 (() => {
-  const { api, toast, escapeHtml, rankClass, formatWhen, connectLive } = window.C88;
+  const { api, toast, escapeHtml, rankClass, rankPlace, formatWhen, connectLive } = window.C88;
 
   const loginView = document.getElementById("login-view");
   const dashView = document.getElementById("dash-view");
@@ -7,6 +7,7 @@
   const loginError = document.getElementById("login-error");
   const logoutBtn = document.getElementById("logout-btn");
   const listEl = document.getElementById("admin-ranking");
+  const rankStatus = document.getElementById("admin-rank-status");
   const chatEl = document.getElementById("admin-chat");
   const muteEl = document.getElementById("mute-list");
   const addBtn = document.getElementById("add-btn");
@@ -76,19 +77,50 @@
     }
   });
 
+  const handleSvg =
+    '<svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="6" cy="4" r="1.5"/><circle cx="12" cy="4" r="1.5"/><circle cx="6" cy="9" r="1.5"/><circle cx="12" cy="9" r="1.5"/><circle cx="6" cy="14" r="1.5"/><circle cx="12" cy="14" r="1.5"/></svg>';
+
+  async function persistOrder(ids, okText) {
+    const data = await api("/api/admin/ranking", {
+      method: "PUT",
+      body: JSON.stringify({ ids }),
+    });
+    renderRanking(data.ranking);
+    toast(okText || "Ranking atualizado ao vivo.");
+    return data;
+  }
+
   function renderRanking(items) {
-    ranking = items;
-    listEl.innerHTML = items
-      .map((a) => {
+    ranking = items || [];
+    if (rankStatus) rankStatus.hidden = true;
+    if (!ranking.length) {
+      if (sortable) {
+        sortable.destroy();
+        sortable = null;
+      }
+      listEl.innerHTML = "";
+      if (rankStatus) {
+        rankStatus.hidden = false;
+        rankStatus.className = "empty";
+        rankStatus.textContent = "Nenhum atleta no ranking. Clica em + ATLETA pra começar.";
+      }
+      return;
+    }
+    listEl.innerHTML = ranking
+      .map((a, index) => {
         const klass = rankClass(a.rank);
+        const place = rankPlace(a.rank);
         return `<li class="admin-row" data-id="${escapeHtml(a.id)}">
-          <span class="handle" aria-label="Arrastar">☰</span>
-          <span class="rank-sq ${klass}">${a.rank}</span>
+          <button class="handle" type="button" aria-label="Arrastar ${escapeHtml(a.name)} para reordenar">${handleSvg}</button>
+          <span class="rank-sq ${klass}" aria-hidden="true">${a.rank}</span>
           <div class="rank-main">
             <p class="athlete-name">${escapeHtml(a.name.toUpperCase())} <span class="rank-icon">${escapeHtml(a.icon)}</span></p>
             <p class="athlete-nick">${escapeHtml(a.nickname || "SEM APELIDO")}</p>
+            <p class="rank-place">${escapeHtml(place)}</p>
           </div>
           <div class="tiny-actions">
+            <button class="btn ghost" data-up="${escapeHtml(a.id)}" type="button" ${index === 0 ? "disabled" : ""} aria-label="Subir ${escapeHtml(a.name)}">SUBIR</button>
+            <button class="btn ghost" data-down="${escapeHtml(a.id)}" type="button" ${index === ranking.length - 1 ? "disabled" : ""} aria-label="Descer ${escapeHtml(a.name)}">DESCER</button>
             <button class="btn ghost" data-edit="${escapeHtml(a.id)}" type="button">EDITAR</button>
             <button class="btn danger" data-del="${escapeHtml(a.id)}" type="button">APAGAR</button>
           </div>
@@ -124,12 +156,7 @@
           }
         });
         try {
-          const data = await api("/api/admin/ranking", {
-            method: "PUT",
-            body: JSON.stringify({ ids }),
-          });
-          renderRanking(data.ranking);
-          toast("Ranking atualizado ao vivo.");
+          await persistOrder(ids, "Ranking atualizado ao vivo.");
         } catch (err) {
           toast(err.message);
           if (err.status === 401) {
@@ -198,12 +225,22 @@
 
   async function refresh() {
     try {
+      if (rankStatus && !ranking.length) {
+        rankStatus.hidden = false;
+        rankStatus.className = "loading";
+        rankStatus.textContent = "Carregando o ranking…";
+      }
       const state = await api("/api/admin/state");
       renderRanking(state.ranking);
       renderChat(state.messages, state.muted);
       renderPlay(state);
     } catch (err) {
       if (err.status === 401) showLogin();
+      if (rankStatus) {
+        rankStatus.hidden = false;
+        rankStatus.className = "error";
+        rankStatus.textContent = err.message || "Não deu pra carregar o painel. Tenta de novo.";
+      }
       throw err;
     }
   }
@@ -250,7 +287,8 @@
       await showDash();
     } catch (err) {
       loginError.hidden = false;
-      loginError.textContent = err.message;
+      loginError.textContent = err.message || "Não deu pra entrar. Confere usuário e senha.";
+      loginError.focus();
     }
   });
 
@@ -263,6 +301,9 @@
   cancelModal.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
     if (event.target === modal) closeModal();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("open")) closeModal();
   });
 
   form.addEventListener("submit", async (event) => {
@@ -292,6 +333,7 @@
     } catch (err) {
       athleteError.hidden = false;
       athleteError.textContent = err.message;
+      athleteError.focus();
       if (err.status === 401) {
         closeModal();
         showLogin();
@@ -300,8 +342,27 @@
   });
 
   listEl.addEventListener("click", async (event) => {
+    if (event.target.closest(".handle")) return;
     const edit = event.target.closest("[data-edit]");
     const del = event.target.closest("[data-del]");
+    const up = event.target.closest("[data-up]");
+    const down = event.target.closest("[data-down]");
+    if (up || down) {
+      const id = (up || down).dataset.up || (up || down).dataset.down;
+      const ids = ranking.map((a) => a.id);
+      const index = ids.indexOf(id);
+      const next = index + (up ? -1 : 1);
+      if (index < 0 || next < 0 || next >= ids.length) return;
+      const swapped = [...ids];
+      [swapped[index], swapped[next]] = [swapped[next], swapped[index]];
+      try {
+        await persistOrder(swapped, "Posição atualizada.");
+      } catch (err) {
+        toast(err.message);
+        if (err.status === 401) showLogin();
+      }
+      return;
+    }
     if (edit) {
       const athlete = ranking.find((a) => a.id === edit.dataset.edit);
       if (athlete) openModal(athlete);

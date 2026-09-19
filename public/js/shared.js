@@ -50,6 +50,17 @@
     return "";
   }
 
+  function rankPlace(rank) {
+    if (rank === 1) return "1º · OURO";
+    if (rank === 2) return "2º · PRATA";
+    if (rank === 3) return "3º · BRONZE";
+    return `${rank}º`;
+  }
+
+  function prefersReducedMotion() {
+    return Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
   function formatWhen(iso) {
     if (!iso) return "";
     const date = new Date(iso);
@@ -108,5 +119,15 @@
     };
   }
 
-  window.C88 = { toast, api, escapeHtml, rankClass, formatWhen, formatToday, connectLive };
+  window.C88 = {
+    toast,
+    api,
+    escapeHtml,
+    rankClass,
+    rankPlace,
+    prefersReducedMotion,
+    formatWhen,
+    formatToday,
+    connectLive,
+  };
 })();

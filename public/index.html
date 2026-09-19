@@ -8,10 +8,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/app.css" />
   </head>
   <body>
+    <a class="skip-link" href="#ranking-title">Ir para o ranking</a>
     <div class="page">
       <header class="topbar">
         <div class="brand-block">
@@ -37,15 +38,15 @@
       </section>
 
       <div class="layout">
-        <section aria-labelledby="ranking-title">
-          <div class="section-head">
+        <section class="ranking-board" aria-labelledby="ranking-title">
+          <div class="section-head is-sticky">
             <h2 class="section-title" id="ranking-title">RANKING HYROX — C88</h2>
             <p class="section-sub" id="ranking-updated">OFICIAL • AO VIVO</p>
           </div>
           <div id="podium" class="podium"></div>
-          <ol id="ranking" class="rank-list"></ol>
-          <p class="loading" id="ranking-status">Carregando o ranking...</p>
-          <p class="footnote">Ranking sujeito a alterações sem aviso prévio. Bora treinar...</p>
+          <ol id="ranking" class="rank-list" aria-live="polite"></ol>
+          <p class="loading" id="ranking-status" role="status">Carregando o ranking oficial…</p>
+          <p class="footnote">Ranking sujeito a alterações sem aviso prévio. Bora treinar.</p>
         </section>
 
         <aside class="mural" id="mural" aria-labelledby="mural-title">
@@ -56,7 +57,7 @@
             </div>
             <p class="section-sub">Provoca na esportiva. Respeita a família. O Complexo tá de olho.</p>
           </div>
-          <div id="chat-status" class="loading">Abrindo o mural...</div>
+          <div id="chat-status" class="loading" role="status">Abrindo o mural…</div>
           <ul id="chat-list" class="chat-list" aria-live="polite"></ul>
           <div class="mural-composer">
             <div id="who" class="who"></div>

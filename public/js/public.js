@@ -1,5 +1,5 @@
 (() => {
-  const { api, toast, escapeHtml, rankClass, formatWhen, formatToday, connectLive } = window.C88;
+  const { api, toast, escapeHtml, rankClass, rankPlace, prefersReducedMotion, formatWhen, formatToday, connectLive } = window.C88;
   const REACTIONS = ["🔥", "💪", "😂", "👀"];
 
   const rankingEl = document.getElementById("ranking");
@@ -65,31 +65,38 @@
   function renderRanking(athletes) {
     if (!Array.isArray(athletes) || !athletes.length) {
       rankingStatus.hidden = false;
-      rankingStatus.textContent = "Ranking vazio. O admin ainda não largou o grid.";
+      rankingStatus.className = "empty";
+      rankingStatus.textContent = "Ainda não tem atleta no grid. O Complexo solta o ranking em breve.";
       rankingEl.innerHTML = "";
       podiumEl.innerHTML = "";
+      rankingEl.setAttribute("aria-busy", "false");
       return;
     }
     rankingStatus.hidden = true;
+    rankingEl.setAttribute("aria-busy", "false");
     const top = athletes.slice(0, 3);
-    const rest = athletes.slice(3);
     podiumEl.innerHTML = top
       .map((a) => {
         const klass = rankClass(a.rank);
+        const place = rankPlace(a.rank);
         return `<article class="podium-card ${klass}">
-          <div class="rank-sq ${klass}">${a.rank}</div>
+          <div class="rank-sq ${klass}" aria-hidden="true">${a.rank}</div>
           <h3 class="athlete-name">${escapeHtml(a.name.toUpperCase())} <span class="rank-icon">${escapeHtml(a.icon)}</span></h3>
           <p class="athlete-nick">${escapeHtml(a.nickname || "SEM APELIDO")} ${streakBadge(a)}</p>
+          <p class="rank-place">${escapeHtml(place)}</p>
         </article>`;
       })
       .join("");
-    rankingEl.innerHTML = rest
+    rankingEl.innerHTML = athletes
       .map((a) => {
-        return `<li class="rank-row">
-          <span class="rank-sq">${a.rank}</span>
+        const klass = rankClass(a.rank);
+        const place = rankPlace(a.rank);
+        return `<li class="rank-row ${klass}">
+          <span class="rank-sq ${klass}" aria-hidden="true">${a.rank}</span>
           <div class="rank-main">
             <p class="athlete-name">${escapeHtml(a.name.toUpperCase())} <span class="rank-icon">${escapeHtml(a.icon)}</span> ${streakBadge(a)}</p>
             <p class="athlete-nick">${escapeHtml(a.nickname || "SEM APELIDO")}</p>
+            <p class="rank-place">${escapeHtml(place)}</p>
           </div>
         </li>`;
       })
@@ -104,7 +111,7 @@
     if (!Array.isArray(messages) || !messages.length) {
       chatStatus.hidden = false;
       chatStatus.className = "empty";
-      chatStatus.textContent = "Mural limpo. Manda o primeiro recado.";
+      chatStatus.textContent = "Mural limpo. Manda o primeiro recado da galera.";
       chatList.innerHTML = "";
       return;
     }
@@ -123,7 +130,7 @@
         const reacts = REACTIONS.map((emoji) => {
           const pack = (m.reactions && m.reactions[emoji]) || { count: 0, users: [] };
           const mine = me && pack.users && pack.users.includes(me.id);
-          return `<button type="button" class="react-btn ${mine ? "mine" : ""}" data-react="${escapeHtml(m.id)}" data-emoji="${emoji}">${emoji} ${pack.count || ""}</button>`;
+          return `<button type="button" class="react-btn ${mine ? "mine" : ""}" data-react="${escapeHtml(m.id)}" data-emoji="${emoji}" aria-pressed="${mine ? "true" : "false"}">${emoji} ${pack.count || ""}</button>`;
         }).join("");
         return `<li class="chat-item ${m.pinned ? "pinned" : ""}">
           <div class="chat-meta">
@@ -172,7 +179,7 @@
   function renderHall(list) {
     const el = document.getElementById("hall");
     if (!list || !list.length) {
-      el.innerHTML = `<li class="empty">Ainda sem rei. O #1 oficial entra pra história.</li>`;
+      el.innerHTML = `<li class="empty">Ainda sem rei. Quem chega ao #1 oficial entra pra história.</li>`;
       return;
     }
     el.innerHTML = list
@@ -212,7 +219,7 @@
     const picks = canVote
       ? `<div class="vote-grid">${board
           .map(
-            (a) => `<button type="button" class="dev-chip ${week.mine && week.mine.athleteId === a.id ? "picked" : ""}" data-week="${escapeHtml(a.id)}">
+            (a) => `<button type="button" class="dev-chip ${week.mine && week.mine.athleteId === a.id ? "picked" : ""}" data-week="${escapeHtml(a.id)}" aria-pressed="${week.mine && week.mine.athleteId === a.id ? "true" : "false"}">
               <span>${escapeHtml(a.icon)}</span><span>${escapeHtml(a.name)}</span>
             </button>`
           )
@@ -307,7 +314,8 @@
       .map((o) => {
         const pct = total ? Math.round((o.count / total) * 100) : 0;
         const can = me && !me.isAdmin && poll.open && !muted;
-        return `<button type="button" class="poll-opt" data-opt="${escapeHtml(o.id)}" ${can ? "" : "disabled"}>
+        const mine = poll.mine === o.id;
+        return `<button type="button" class="poll-opt ${mine ? "mine" : ""}" data-opt="${escapeHtml(o.id)}" ${can ? "" : "disabled"} aria-pressed="${mine ? "true" : "false"}">
           <span>${escapeHtml(o.text)}</span>
           <span class="tiny">${o.count} • ${pct}%</span>
           <i style="width:${pct}%"></i>
@@ -408,14 +416,16 @@
     banner.hidden = false;
     banner.textContent = `PÓDIO OFICIAL • ${names.toUpperCase()}`;
     const box = document.getElementById("confetti");
-    box.hidden = false;
-    box.innerHTML = "";
-    for (let i = 0; i < 48; i += 1) {
-      const bit = document.createElement("i");
-      bit.style.left = `${Math.random() * 100}%`;
-      bit.style.animationDelay = `${Math.random() * 0.8}s`;
-      bit.style.animationDuration = `${1.6 + Math.random()}s`;
-      box.appendChild(bit);
+    if (!prefersReducedMotion()) {
+      box.hidden = false;
+      box.innerHTML = "";
+      for (let i = 0; i < 48; i += 1) {
+        const bit = document.createElement("i");
+        bit.style.left = `${Math.random() * 100}%`;
+        bit.style.animationDelay = `${Math.random() * 0.8}s`;
+        bit.style.animationDuration = `${1.6 + Math.random()}s`;
+        box.appendChild(bit);
+      }
     }
     toast(`${names} entrou no pódio oficial`);
     setTimeout(() => {
@@ -601,9 +611,11 @@
     } catch (err) {
       rankingStatus.hidden = false;
       rankingStatus.className = "error";
-      rankingStatus.textContent = err.message;
+      rankingStatus.setAttribute("role", "alert");
+      rankingStatus.textContent = err.message || "Não deu pra carregar o ranking. Recarrega a página.";
       chatStatus.hidden = false;
       chatStatus.className = "error";
+      chatStatus.setAttribute("role", "alert");
       chatStatus.textContent = "Mural offline. Recarrega a página.";
     }
   }

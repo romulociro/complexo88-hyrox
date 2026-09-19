@@ -7,10 +7,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/app.css" />
   </head>
   <body class="admin-page">
+    <a class="skip-link" href="#login-form">Ir para o conteúdo</a>
     <div class="page">
       <header class="topbar">
         <div class="brand-block">
@@ -29,15 +30,19 @@
 
       <div id="login-view" class="login-wrap" hidden>
         <form id="login-form" class="login-card">
+          <p class="brand">COMPLEXO<span>88</span></p>
           <h1 class="section-title">ENTRAR NO PAINEL</h1>
-          <p class="section-sub" style="margin: 8px 0 16px">COMPLEXO 88 — SÓ QUEM MANDA NO BOX</p>
-          <label class="sr-only" for="user">Usuário</label>
-          <input id="user" name="user" type="text" autocomplete="username" placeholder="USUÁRIO" />
-          <div style="height: 8px"></div>
-          <label class="sr-only" for="pass">Senha</label>
-          <input id="pass" name="pass" type="password" autocomplete="current-password" placeholder="SENHA" />
-          <p class="error" id="login-error" hidden></p>
-          <div class="actions" style="margin-top: 12px">
+          <p class="section-sub" style="margin: 8px 0 20px">SÓ QUEM MANDA NO BOX</p>
+          <div class="field">
+            <label class="field-label" for="user">Usuário</label>
+            <input id="user" name="user" type="text" autocomplete="username" placeholder="Seu usuário do box" aria-describedby="login-error" />
+          </div>
+          <div class="field">
+            <label class="field-label" for="pass">Senha</label>
+            <input id="pass" name="pass" type="password" autocomplete="current-password" placeholder="Sua senha" aria-describedby="login-error" />
+          </div>
+          <p class="error" id="login-error" role="alert" tabindex="-1" hidden></p>
+          <div class="actions">
             <button class="btn" type="submit">ENTRAR</button>
           </div>
         </form>
@@ -55,7 +60,8 @@
               <h2 class="section-title">RANKING HYROX — C88</h2>
               <button class="btn" id="add-btn" type="button">+ ATLETA</button>
             </div>
-            <p class="section-sub" id="rank-hint">Segura e arrasta (mouse ou toque). O amarelo marca quem está em movimento.</p>
+            <p class="section-sub" id="rank-hint">Arrasta pela alça amarela, ou usa SUBIR / DESCER. O amarelo marca quem está em movimento.</p>
+            <p class="loading" id="admin-rank-status" role="status" hidden>Carregando o ranking…</p>
             <ul id="admin-ranking" class="admin-list"></ul>
           </section>
 
@@ -135,20 +141,21 @@
       <form class="modal-card" id="athlete-form">
         <h2 class="section-title" id="modal-title">NOVO ATLETA</h2>
         <input type="hidden" id="athlete-id" />
-        <div style="height: 10px"></div>
-        <label class="sr-only" for="athlete-name">Nome</label>
-        <input id="athlete-name" type="text" maxlength="40" placeholder="NOME" required />
-        <div style="height: 8px"></div>
-        <label class="sr-only" for="athlete-nick">Apelido</label>
-        <input id="athlete-nick" type="text" maxlength="40" placeholder="APELIDO" />
-        <div style="height: 12px"></div>
+        <div class="field" style="margin-top: 12px">
+          <label class="field-label" for="athlete-name">Nome</label>
+          <input id="athlete-name" type="text" maxlength="40" placeholder="NOME" required />
+        </div>
+        <div class="field">
+          <label class="field-label" for="athlete-nick">Apelido</label>
+          <input id="athlete-nick" type="text" maxlength="40" placeholder="APELIDO" />
+        </div>
         <p class="section-sub">ÍCONE — TOCA UM EMOJI OU COLA QUALQUER UM</p>
         <div class="form-row" style="margin-top: 8px">
           <div class="icon-preview" id="icon-preview">⚡</div>
           <input id="athlete-icon" type="text" maxlength="16" placeholder="COLA O EMOJI AQUI" />
         </div>
         <div id="emoji-picker"></div>
-        <p class="error" id="athlete-error" hidden></p>
+        <p class="error" id="athlete-error" role="alert" tabindex="-1" hidden></p>
         <div class="actions" style="margin-top: 12px">
           <button class="btn" type="submit">SALVAR</button>
           <button class="btn ghost" type="button" id="cancel-modal">CANCELAR</button>
