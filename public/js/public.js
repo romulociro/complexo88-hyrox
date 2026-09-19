@@ -88,6 +88,7 @@
       })
       .join("");
     rankingEl.innerHTML = athletes
+      .slice(3)
       .map((a) => {
         const klass = rankClass(a.rank);
         const place = rankPlace(a.rank);
