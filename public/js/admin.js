@@ -364,6 +364,7 @@
 
   addBtn.addEventListener("click", () => openModal(null));
   cancelModal.addEventListener("click", closeModal);
+  document.getElementById("athlete-modal-dismiss")?.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
     if (event.target === modal) closeModal();
   });
