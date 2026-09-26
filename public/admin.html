@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Admin — Complexo 88 Hyrox</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -138,27 +138,30 @@
     </div>
 
     <div class="modal" id="athlete-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button type="button" class="modal-dismiss" id="athlete-modal-dismiss" tabindex="-1" aria-label="Fechar"></button>
       <form class="modal-card" id="athlete-form">
-        <h2 class="section-title" id="modal-title">NOVO ATLETA</h2>
-        <input type="hidden" id="athlete-id" />
-        <div class="field" style="margin-top: 12px">
-          <label class="field-label" for="athlete-name">Nome</label>
-          <input id="athlete-name" type="text" maxlength="40" placeholder="NOME" required />
-        </div>
-        <div class="field">
-          <label class="field-label" for="athlete-nick">Apelido</label>
-          <input id="athlete-nick" type="text" maxlength="40" placeholder="APELIDO" />
-        </div>
-        <p class="section-sub">ÍCONE — TOCA UM EMOJI OU COLA QUALQUER UM</p>
-        <div class="form-row" style="margin-top: 8px">
-          <div class="icon-preview" id="icon-preview">⚡</div>
-          <input id="athlete-icon" type="text" maxlength="16" placeholder="COLA O EMOJI AQUI" />
-        </div>
-        <div id="emoji-picker"></div>
-        <p class="error" id="athlete-error" role="alert" tabindex="-1" hidden></p>
-        <div class="actions" style="margin-top: 12px">
-          <button class="btn" type="submit">SALVAR</button>
-          <button class="btn ghost" type="button" id="cancel-modal">CANCELAR</button>
+        <div class="modal-scroll">
+          <h2 class="section-title" id="modal-title">NOVO ATLETA</h2>
+          <input type="hidden" id="athlete-id" />
+          <div class="field" style="margin-top: 12px">
+            <label class="field-label" for="athlete-name">Nome</label>
+            <input id="athlete-name" type="text" maxlength="40" placeholder="NOME" required />
+          </div>
+          <div class="field">
+            <label class="field-label" for="athlete-nick">Apelido</label>
+            <input id="athlete-nick" type="text" maxlength="40" placeholder="APELIDO" />
+          </div>
+          <p class="section-sub">ÍCONE — TOCA UM EMOJI OU COLA QUALQUER UM</p>
+          <div class="form-row" style="margin-top: 8px">
+            <div class="icon-preview" id="icon-preview">⚡</div>
+            <input id="athlete-icon" type="text" maxlength="16" placeholder="COLA O EMOJI AQUI" />
+          </div>
+          <div id="emoji-picker"></div>
+          <p class="error" id="athlete-error" role="alert" tabindex="-1" hidden></p>
+          <div class="actions wrap" style="margin-top: 12px">
+            <button class="btn" type="submit">SALVAR</button>
+            <button class="btn ghost" type="button" id="cancel-modal">CANCELAR</button>
+          </div>
         </div>
       </form>
     </div>
