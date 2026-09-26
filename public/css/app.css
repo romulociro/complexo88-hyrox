@@ -27,6 +27,10 @@
   --touch: 44px;
   --radius: 2px;
   --header-offset: 4.5rem;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 * {
@@ -59,10 +63,24 @@ body {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+
+html.modal-open,
+body.modal-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.modal-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
 }
 
 img {
@@ -141,7 +159,7 @@ button,
 .page {
   width: min(1180px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 22px 0 64px;
+  padding: max(22px, var(--safe-top)) 0 calc(64px + var(--safe-bottom));
 }
 
 .topbar {
@@ -794,6 +812,7 @@ select:hover {
   display: grid;
   place-items: center;
   min-height: 70vh;
+  min-height: 70dvh;
   padding: var(--space-xl) 0;
 }
 
@@ -920,19 +939,45 @@ select:hover {
   inset: 0;
   z-index: 40;
   display: none;
-  place-items: center;
-  padding: 18px;
+  padding: max(12px, var(--safe-top)) max(16px, var(--safe-right)) max(12px, var(--safe-bottom)) max(16px, var(--safe-left));
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(4px);
+  touch-action: pan-y;
 }
 
 .modal.open {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  inset: auto;
+  top: var(--vv-offset-top, 0px);
+  left: var(--vv-offset-left, 0px);
+  width: var(--vv-width, 100%);
+  height: var(--vv-height, 100vh);
+  height: var(--vv-height, 100dvh);
+  max-height: var(--vv-height, 100dvh);
 }
 
 .modal-card {
+  display: flex;
+  flex-direction: column;
   width: min(520px, 100%);
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
   border-color: var(--yellow);
+}
+
+.modal-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .emoji-grid {
@@ -971,8 +1016,8 @@ select:hover {
 
 .toast {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: max(16px, var(--safe-right));
+  bottom: max(16px, var(--safe-bottom));
   z-index: 50;
   display: none;
   padding: 12px 16px;
@@ -1242,6 +1287,32 @@ select:hover {
 
   .page {
     width: min(1180px, calc(100% - 20px));
+    padding-top: max(16px, var(--safe-top));
+    padding-bottom: calc(48px + var(--safe-bottom));
+  }
+
+  .admin-page .section-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .modal.open {
+    padding: 10px max(10px, var(--safe-right)) max(10px, var(--safe-bottom)) max(10px, var(--safe-left));
+  }
+
+  .modal-card {
+    padding: var(--space-md);
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+    max-height: min(200px, 36dvh);
+  }
+}
+
+@media (max-height: 700px) {
+  .emoji-grid {
+    max-height: min(160px, 28dvh);
   }
 }
 

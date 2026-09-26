@@ -28,11 +28,68 @@
   let sortable;
   let picker;
   let dragging = false;
+  let lockedScrollY = 0;
+  let viewportBound = false;
+  const modalScroll = form.querySelector(".modal-scroll");
 
   function setIcon(value) {
     const icon = String(value || "").trim() || "⚡";
     iconInput.value = icon;
     iconPreview.textContent = icon;
+  }
+
+  function syncModalViewport() {
+    const vv = window.visualViewport;
+    const height = vv ? vv.height : window.innerHeight;
+    const width = vv ? vv.width : window.innerWidth;
+    const offsetTop = vv ? vv.offsetTop : 0;
+    const offsetLeft = vv ? vv.offsetLeft : 0;
+    modal.style.setProperty("--vv-height", `${height}px`);
+    modal.style.setProperty("--vv-width", `${width}px`);
+    modal.style.setProperty("--vv-offset-top", `${offsetTop}px`);
+    modal.style.setProperty("--vv-offset-left", `${offsetLeft}px`);
+  }
+
+  function bindModalViewport() {
+    if (viewportBound) return;
+    viewportBound = true;
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", syncModalViewport);
+    vv?.addEventListener("scroll", syncModalViewport);
+    window.addEventListener("resize", syncModalViewport);
+    window.addEventListener("orientationchange", syncModalViewport);
+  }
+
+  function unbindModalViewport() {
+    if (!viewportBound) return;
+    viewportBound = false;
+    const vv = window.visualViewport;
+    vv?.removeEventListener("resize", syncModalViewport);
+    vv?.removeEventListener("scroll", syncModalViewport);
+    window.removeEventListener("resize", syncModalViewport);
+    window.removeEventListener("orientationchange", syncModalViewport);
+  }
+
+  function lockPageScroll() {
+    lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = `-${lockedScrollY}px`;
+    document.documentElement.classList.add("modal-open");
+    document.body.classList.add("modal-open");
+  }
+
+  function unlockPageScroll() {
+    document.documentElement.classList.remove("modal-open");
+    document.body.classList.remove("modal-open");
+    document.body.style.top = "";
+    window.scrollTo(0, lockedScrollY);
+  }
+
+  function revealFocusedField(target) {
+    if (!modal.classList.contains("open")) return;
+    if (!(target instanceof HTMLElement) || !form.contains(target)) return;
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+    });
   }
 
   function openModal(athlete) {
@@ -50,13 +107,21 @@
       nickInput.value = "";
       setIcon("⚡");
     }
+    syncModalViewport();
+    bindModalViewport();
+    lockPageScroll();
     modal.classList.add("open");
-    nameInput.focus();
+    if (modalScroll) modalScroll.scrollTop = 0;
+    nameInput.focus({ preventScroll: true });
+    revealFocusedField(nameInput);
     picker?.set(iconInput.value);
   }
 
   function closeModal() {
+    if (!modal.classList.contains("open")) return;
     modal.classList.remove("open");
+    unbindModalViewport();
+    unlockPageScroll();
   }
 
   try {
@@ -305,6 +370,7 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && modal.classList.contains("open")) closeModal();
   });
+  form.addEventListener("focusin", (event) => revealFocusedField(event.target));
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
