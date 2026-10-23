@@ -1,6 +1,13 @@
-# Blueprint da Render — plano FREE, um único web service (WebSocket ok).
-# Dashboard: New Blueprint Instance → este repo, ou New Web Service e use os comandos abaixo.
+# Blueprint da Render — web service free + Postgres free.
+# O Postgres guarda o ranking quando o web service entra em standby.
+# Plano free do banco expira em 30 dias; antes disso, suba para um plano pago se quiser manter os dados.
 # https://render.com/docs/blueprint-spec
+
+databases:
+  - name: complexo88-hyrox-db
+    plan: free
+    databaseName: complexo88
+    ipAllowList: []
 
 services:
   - type: web
@@ -12,6 +19,10 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: complexo88-hyrox-db
+          property: connectionString
       - key: NODE_ENV
         value: production
       - key: SESSION_SECRET

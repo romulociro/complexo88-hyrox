@@ -21,7 +21,6 @@ const GOOGLE_CALLBACK_URL =
 const COOKIE_SECURE = process.env.COOKIE_SECURE === "1" || ON_RENDER;
 
 const store = new Store();
-store.load();
 
 const app = express();
 const server = http.createServer(app);
@@ -296,8 +295,8 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     service: "complexo88-hyrox-ranking",
-    persist: "json-file",
-    ephemeralDisk: ON_RENDER,
+    persist: store.mode,
+    ephemeralDisk: ON_RENDER && store.mode !== "postgres",
     adminEnv: adminConfigured(),
   });
 });
@@ -1016,7 +1015,9 @@ function shutdown() {
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
-server.listen(PORT, "0.0.0.0", () => {
+async function main() {
+  await store.load();
+  server.listen(PORT, "0.0.0.0", () => {
   const publicUrl = RENDER_URL || `http://127.0.0.1:${PORT}`;
   console.log(`Complexo 88 Hyrox ranking em ${publicUrl}`);
   console.log(`Admin: ${publicUrl}/admin`);
@@ -1024,8 +1025,9 @@ server.listen(PORT, "0.0.0.0", () => {
     console.error("ADMIN_USER e ADMIN_PASS ausentes. Login do /admin recusado até definir no ambiente.");
   }
   console.log(googleConfigured() ? "Google OAuth: ativo" : "Google OAuth: ausente — mural em MODO DEV");
-  if (ON_RENDER) {
-    console.log("Render free: disco efêmero. data/store.json some no redeploy; o seed volta no próximo boot se o arquivo não existir.");
+  console.log(store.mode === "postgres" ? "Ranking persistido no Postgres." : "Ranking no arquivo local.");
+  if (ON_RENDER && store.mode !== "postgres") {
+    console.log("Render free: disco efêmero. data/store.json some no standby/redeploy; o seed volta no próximo boot se o arquivo não existir.");
   }
   if (
     SESSION_SECRET === "c88-dev-session-secret" &&
@@ -1033,4 +1035,10 @@ server.listen(PORT, "0.0.0.0", () => {
   ) {
     console.warn("SESSION_SECRET ainda é o padrão. Defina um segredo no painel da Render.");
   }
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });

@@ -388,7 +388,8 @@
     }
   }
 
-  function applyState(next, extras = {}) {
+  function applyState(next, extras = {}, source = "live") {
+    if (source === "poll" && next?.updatedAt && next.updatedAt === state.updatedAt) return;
     state = { ...state, ...next };
     renderRanking(state.ranking);
     renderChat(state.messages);
@@ -630,16 +631,26 @@
     history.replaceState({}, "", url.pathname + url.hash);
   }
 
+  function pullState(source) {
+    return api("/api/state")
+      .then((next) => applyState(next, {}, source))
+      .catch(() => {});
+  }
+
   connectLive((msg) => {
     if (msg.type === "hello" || msg.type === "state") {
       applyState(msg.payload || {}, msg.payload || {});
-      if (me) {
-        api("/api/state")
-          .then((next) => applyState(next, msg.payload || {}))
-          .catch(() => {});
-      }
+      pullState("live");
     }
   });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") pullState("poll");
+  });
+
+  setInterval(() => {
+    if (document.visibilityState === "visible") pullState("poll");
+  }, 4000);
 
   boot();
 })();
