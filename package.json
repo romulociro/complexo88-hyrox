@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "reset-data": "node -e \"require('fs').rmSync('data/store.json',{force:true}); console.log('store.json removido — o próximo start recria o seed.');\""
+    "reset-data": "node -e \"require('dotenv').config(); require('fs').rmSync('data/store.json',{force:true}); require('./src/persist').clearDoc().then((ok)=>{ console.log(ok ? 'Postgres limpo.' : 'Sem Postgres.'); console.log('store.json removido — o próximo start recria o seed.'); process.exit(0); });\""
   },
   "engines": {
     "node": ">=18"
@@ -16,6 +16,7 @@
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "pg": "^8.16.3",
     "ws": "^8.18.3"
   }
 }

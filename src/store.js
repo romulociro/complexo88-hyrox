@@ -3,6 +3,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { SEED_ATHLETES, slugify } = require("./seed");
 const { normalize } = require("./play");
+const persist = require("./persist");
 
 const DATA_DIR = path.join(__dirname, "..", "data");
 const DATA_PATH = process.env.DATA_PATH || path.join(DATA_DIR, "store.json");
@@ -38,27 +39,54 @@ function emptyStore() {
   );
 }
 
+function readFileDoc() {
+  try {
+    if (!fs.existsSync(DATA_PATH)) return null;
+    return JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function stamp(doc) {
+  const time = Date.parse(doc?.updatedAt || "");
+  return Number.isFinite(time) ? time : 0;
+}
+
+function chooseDoc(fileDoc, remote) {
+  if (!remote.ok) return fileDoc;
+  if (remote.doc && fileDoc) {
+    return stamp(remote.doc) >= stamp(fileDoc) ? remote.doc : fileDoc;
+  }
+  return remote.doc || fileDoc || null;
+}
+
 class Store {
   constructor() {
     this.data = emptyStore();
     this.queue = Promise.resolve();
+    this.mode = "json-file";
   }
 
-  load() {
+  async load() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    if (!fs.existsSync(DATA_PATH)) {
+    const fileDoc = readFileDoc();
+    const remote = persist.configure() ? await persist.loadDoc() : { ok: false, doc: null };
+    const chosen = chooseDoc(fileDoc, remote);
+    if (!chosen) {
       this.data = emptyStore();
-      this.writeSync();
       console.log(`Seed inicial gravado em ${DATA_PATH}`);
-      return this.data;
+    } else {
+      this.data = normalize(chosen, { nowIso, seedAthletes });
+      if (remote.ok && remote.doc && chosen === remote.doc) {
+        console.log("Ranking carregado do Postgres.");
+      }
     }
-    try {
-      const raw = JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
-      this.data = normalize(raw, { nowIso, seedAthletes });
-      this.writeSync();
-    } catch {
-      this.data = emptyStore();
-      this.writeSync();
+    this.writeSync();
+    if (persist.enabled()) {
+      const saved = await persist.saveDoc(this.data);
+      this.mode = saved ? "postgres" : "json-file";
+      if (!saved) console.error("Postgres indisponível no boot. Seguindo com o arquivo local.");
     }
     return this.data;
   }
@@ -79,6 +107,10 @@ class Store {
       const result = await fn(this.data);
       this.data.updatedAt = nowIso();
       this.writeSync();
+      if (persist.enabled()) {
+        const saved = await persist.saveDoc(this.data);
+        this.mode = saved ? "postgres" : "json-file";
+      }
       return result;
     });
     this.queue = run.catch(() => {});

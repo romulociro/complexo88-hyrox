@@ -382,19 +382,17 @@
       icon: iconInput.value,
     };
     try {
-      if (idInput.value) {
-        await api(`/api/admin/athletes/${encodeURIComponent(idInput.value)}`, {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        });
-        toast("Atleta atualizado.");
-      } else {
-        await api("/api/admin/athletes", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-        toast("Atleta no grid.");
-      }
+      const saved = idInput.value
+        ? await api(`/api/admin/athletes/${encodeURIComponent(idInput.value)}`, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          })
+        : await api("/api/admin/athletes", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+      if (saved?.ranking) renderRanking(saved.ranking);
+      toast(idInput.value ? "Atleta atualizado." : "Atleta no grid.");
       closeModal();
       await refresh();
     } catch (err) {

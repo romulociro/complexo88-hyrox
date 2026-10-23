@@ -32,7 +32,8 @@ Start command (local e Render): **`npm start`**. O processo escuta `0.0.0.0` e `
 | `GOOGLE_CLIENT_SECRET` | vazio | OAuth do mural / atletas |
 | `GOOGLE_CALLBACK_URL` | derivado do host | Callback. Na Render, se vazio: `https://SEU-SERVICO.onrender.com/auth/google/callback` |
 | `COOKIE_SECURE` | off / `1` na Render | Cookie HTTPS |
-| `DATA_PATH` | `data/store.json` | Arquivo JSON |
+| `DATA_PATH` | `data/store.json` | Cópia local do ranking |
+| `DATABASE_URL` | vazio | Postgres. No Blueprint vem do banco free. |
 | `NODE_ENV` | — | `production` no Blueprint |
 
 Defina **`ADMIN_USER` e `ADMIN_PASS` no ambiente** (arquivo `.env` local, que é gitignorado, ou Environment da Render). Sem essas variáveis o login do `/admin` é recusado. O README e o código **não** carregam usuário nem senha.
@@ -48,7 +49,7 @@ Volta o seed oficial dos 15 atletas.
 
 Plano alvo: **Web Service free**. Um processo Node longo (não serverless), então o **WebSocket** de `/ws` funciona no mesmo serviço. Start: **`npm start`**. Bind: `0.0.0.0` + `process.env.PORT`.
 
-Nada pago: sem banco, sem Redis, sem worker extra.
+O web service continua free. O Blueprint também cria um **Postgres free** (`DATABASE_URL`) para o ranking não voltar ao seed quando o serviço entra em standby. Esse banco free expira em 30 dias.
 
 ### GitHub → Render
 
@@ -66,17 +67,15 @@ Clone: `https://github.com/romulociro/complexo88-hyrox.git`
 
 **New → Web Service** (sem Blueprint) também vale: Runtime Node, Build `npm install`, Start `npm start`, plan Free. A Render injeta `PORT`; não fixe 43888.
 
-### Disco efêmero (MVP)
+### Ranking que sobrevive ao standby
 
-O ranking, o mural e os votos ficam em **`data/store.json`**.
+Cada inclusão, edição, reordenação e voto grava o estado no Postgres (`DATABASE_URL`) e avisa as páginas abertas na hora pelo WebSocket `/ws`. A página pública também busca `/api/state` de novo ao voltar para a aba e a cada poucos segundos, para o atleta novo aparecer mesmo se o socket caiu no iPhone.
 
-Na Render **free o disco some no redeploy** (e pode sumir se a instância for recriada). Isso é esperado no MVP:
+O arquivo `data/store.json` continua como cópia local. No plano free da Render esse arquivo some no standby e no redeploy. Com `DATABASE_URL`, o boot lê o Postgres e o ranking cadastrado volta.
 
-- Se o arquivo não existir, o boot **recria o seed** dos 15 atletas.
-- Enquanto o serviço está no ar, as mudanças do admin e da galera valem.
-- Depois de um redeploy, volta o seed (a menos que você restaure o JSON).
+Sem `DATABASE_URL` (rodando só na máquina), vale o arquivo. Se ele não existir, o boot recria o seed dos 15 atletas.
 
-Se um dia quiser persistência de verdade **sem pagar a Render**, dá para plugar depois um free tier de [MongoDB Atlas](https://www.mongodb.com/atlas) ou [Turso](https://turso.tech/) (SQLite remoto). Não é necessário para subir o app.
+O Postgres free da Render expira em 30 dias e não tem backup. Para não perder o ranking depois disso, mude o banco para um plano pago antes do prazo.
 
 ### Blueprint (um arquivo)
 
